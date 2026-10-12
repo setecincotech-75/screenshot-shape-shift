@@ -15,149 +15,91 @@
     --text: #F2E9DE;
     --text-dim: #B8AA9B;
     --ember: #D9642C;
-    --ember-dim: #8C4420;
     --amber: #E8A33D;
     --green: #6B9E5A;
     --red: #B4482E;
-    --yellow: #D9A441;
     --radius: 10px;
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased; min-height: 100vh; display: flex; flex-direction: column;}
-  h1,h2,h3,.brand{font-family:'Fraunces',serif;font-weight:600;letter-spacing:-0.01em;}
-  button{font-family:inherit;cursor:pointer;}
-  input,select,textarea{font-family:inherit;}
-
-  /* LOGIN SCREEN */
-  #login-screen {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 30px 16px;
-    background: radial-gradient(circle at 50% 20%, rgba(232,163,61,0.08), transparent 50%), var(--bg);
+  html, body {
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif; min-height: 100%; overflow-y: auto;
   }
-  .login-header-title { text-align: center; margin-bottom: 20px; }
+  h1, h2, h3, .brand { font-family: 'Fraunces', serif; font-weight: 600; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea { font-family: inherit; }
+
+  #login-screen {
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding: 40px 16px 20px 16px; background: radial-gradient(circle at 50% 20%, rgba(232,163,61,0.08), transparent 50%), var(--bg);
+  }
+  .login-header-title { text-align: center; margin-bottom: 24px; margin-top: 10px; }
   .login-header-title .sub-header { font-size: 11.5px; font-weight: 700; color: var(--amber); letter-spacing: 0.08em; margin: 0 0 4px; }
   .login-header-title h1 { font-size: 24px; margin: 0; color: #fff; font-weight: 700; }
   .login-header-title h2 { font-size: 20px; margin: 2px 0 6px; color: var(--amber); text-shadow: 0 0 12px rgba(232,163,61,0.3); }
   .login-header-title .instructor { font-size: 12px; color: var(--text-dim); margin: 0; }
 
   .login-card {
-    width: 100%;
-    max-width: 380px;
-    background: var(--surface);
-    border: 1.5px solid var(--amber);
-    border-radius: 12px;
-    padding: 28px 24px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    width: 100%; max-width: 380px; background: var(--surface); border: 1.5px solid var(--amber);
+    border-radius: 12px; padding: 28px 24px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); margin-bottom: 30px;
   }
   .role-toggle { display: flex; background: var(--surface-2); border-radius: 999px; padding: 4px; margin-bottom: 20px; }
-  .role-toggle button { flex: 1; border: none; background: transparent; color: var(--text-dim); padding: 9px 0; border-radius: 999px; font-size: 13px; font-weight: 600; transition: .2s; }
+  .role-toggle button { flex: 1; border: none; background: transparent; color: var(--text-dim); padding: 9px 0; border-radius: 999px; font-size: 13px; font-weight: 600; }
   .role-toggle button.active { background: var(--amber); color: #131313; }
   
   .field { text-align: left; margin-bottom: 14px; }
-  .field label { display: block; font-size: 10.5px; font-weight: 700; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 0.05em; }
+  .field label { display: block; font-size: 10.5px; font-weight: 700; color: var(--text-dim); margin-bottom: 6px; }
   .field input, .field select, .field textarea { width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; color: var(--text); font-size: 14px; }
   .field input:focus { border-color: var(--amber); outline: none; }
 
-  .field-password-group {
-    display: flex;
-    align-items: center;
-    background: var(--surface-2);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .field-password-group input {
-    flex: 1; border: none !important; background: transparent !important; padding: 11px 12px; color: var(--text); outline: none;
-  }
-  .field-password-group button {
-    background: var(--surface); border: none; border-left: 1px solid var(--line); color: var(--amber); padding: 0 14px; height: 42px; font-weight: 600; font-size: 12px; cursor: pointer;
-  }
+  .field-password-group { display: flex; align-items: center; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .field-password-group input { flex: 1; border: none !important; background: transparent !important; padding: 11px 12px; color: var(--text); outline: none; }
+  .field-password-group button { background: var(--surface); border: none; border-left: 1px solid var(--line); color: var(--amber); padding: 0 14px; height: 42px; font-weight: 600; font-size: 12px; }
 
-  .btn-primary-gold {
-    width: 100%; background: var(--amber); color: #131313; border: none; border-radius: 8px; padding: 13px 0; font-weight: 700; font-size: 15px; margin-top: 10px; cursor: pointer; transition: filter .2s;
-  }
-  .btn-primary-gold:hover { filter: brightness(1.1); }
-
-  .no-access-link {
-    display: block; margin-top: 16px; color: var(--text-dim); font-size: 11.5px; text-align: center; text-decoration: none; line-height: 1.4;
-  }
+  .btn-primary-gold { width: 100%; background: var(--amber); color: #131313; border: none; border-radius: 8px; padding: 13px 0; font-weight: 700; font-size: 15px; margin-top: 10px; }
+  .no-access-link { display: block; margin-top: 16px; color: var(--text-dim); font-size: 11.5px; text-align: center; text-decoration: none; }
   .no-access-link:hover { color: var(--amber); text-decoration: underline; }
 
-  .login-footer {
-    margin-top: 24px; text-align: center; font-size: 11px; color: var(--text-dim); line-height: 1.5;
-  }
-  .login-footer b { color: var(--amber); }
+  .login-footer, footer.app-footer { width: 100%; text-align: center; font-size: 11px; color: var(--text-dim); padding: 16px 10px; border-top: 1px solid var(--line); background: var(--surface); margin-top: auto; }
+  .login-footer b, footer.app-footer b { color: var(--amber); }
 
-  /* APP SHELL (ADM / ALUNO) */
-  #app { display: none; min-height: 100vh; flex-direction: column; flex: 1; }
+  #app { display: none; min-height: 100vh; flex-direction: column; }
   #app.show { display: flex; }
-  
-  .sidebar { width: 230px; background: var(--surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; transition: width .2s ease, transform .2s ease; z-index: 30; }
-  .sidebar.collapsed { width: 64px; }
+  .sidebar { width: 230px; background: var(--surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; z-index: 30; }
   .side-head { display: flex; align-items: center; gap: 10px; padding: 18px 16px; border-bottom: 1px solid var(--line); }
-  .burger { width: 34px; height: 34px; flex-shrink: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-  .burger-lines div { height: 2px; background: var(--text); margin: 3px 0; border-radius: 2px; width: 16px; }
-  .side-head .brand { font-size: 15px; white-space: nowrap; overflow: hidden; }
-  
+  .side-head .brand { font-size: 15px; }
   nav.menu { padding: 12px 10px; flex: 1; overflow-y: auto; }
-  .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: var(--text-dim); font-size: 13.5px; font-weight: 500; margin-bottom: 2px; border: none; background: transparent; width: 100%; text-align: left; white-space: nowrap; overflow: hidden; cursor: pointer; }
+  .menu-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; color: var(--text-dim); font-size: 13.5px; font-weight: 500; margin-bottom: 2px; border: none; background: transparent; width: 100%; text-align: left; }
   .menu-item:hover { background: var(--surface-2); color: var(--text); }
-  .menu-item.active { background: var(--ember-dim); color: var(--amber); }
+  .menu-item.active { background: var(--ember); color: #131313; }
   .side-foot { padding: 14px 16px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--text-dim); }
 
-  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 16px 26px; border-bottom: 1px solid var(--line); background: var(--surface); }
-  .topbar h2 { font-size: 19px; margin: 0; }
-  .content { padding: 26px; flex: 1; overflow-y: auto; }
+  .main { flex: 1; display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 26px; border-bottom: 1px solid var(--line); background: var(--surface); }
+  .content { padding: 26px; flex: 1; }
 
   .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px; }
-  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; cursor: pointer; transition: border-color .2s; }
+  .card:hover { border-color: var(--amber); }
   .card .label { font-size: 11.5px; color: var(--text-dim); margin-bottom: 8px; }
   .card .value { font-size: 24px; font-family: 'Fraunces', serif; font-weight: 600; color: var(--amber); }
   
   .section-title { font-size: 14px; color: var(--text-dim); margin: 22px 0 12px; font-weight: 600; }
-  .row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; font-size: 13px; gap: 10px; flex-wrap: wrap; }
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; font-size: 13px; gap: 10px; }
   
-  .btn { background: var(--surface-2); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn { background: var(--surface-2); border: 1px solid var(--line); color: var(--text); padding: 8px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; }
   .btn:hover { border-color: var(--amber); }
   .btn.primary { background: var(--amber); border-color: var(--amber); color: #131313; }
   .btn.danger { background: rgba(180,72,46,0.15); border-color: var(--red); color: #E28065; }
 
-  /* MODAL */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
   .overlay.show { display: flex; }
   .modal { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 24px; }
   .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .modal-head h3 { margin: 0; font-size: 18px; }
-
-  /* GLOBAL FOOTER (Scroll Natural) */
-  footer.app-footer {
-    position: relative;
-    width: 100%;
-    text-align: center;
-    font-size: 11px;
-    color: var(--text-dim);
-    padding: 16px 10px;
-    border-top: 1px solid var(--line);
-    background: var(--surface);
-    margin-top: auto;
-  }
-  footer.app-footer b { color: var(--amber); }
-
-  @media(max-width:760px){
-    .sidebar { position: fixed; top: 0; bottom: 0; left: 0; transform: translateX(-100%); }
-    .sidebar.mobile-open { transform: translateX(0); }
-    .content { padding: 16px; }
-  }
 </style>
 </head>
 <body>
 
-<!-- ============ TELA DE LOGIN ============ -->
 <div id="login-screen">
   <div class="login-header-title">
     <p class="sub-header" id="loginInstLabel">SISTEMA NACIONAL DE APOIO AO CAMPO</p>
@@ -177,7 +119,6 @@
         <label>USUÁRIO</label>
         <input type="text" id="loginUser" placeholder="seu-usuario" required autocomplete="username">
       </div>
-
       <div class="field">
         <label>SENHA</label>
         <div class="field-password-group">
@@ -185,11 +126,10 @@
           <button type="button" id="btnTogglePass" onclick="togglePassVisibility()">Mostrar</button>
         </div>
       </div>
-
       <button type="submit" class="btn-primary-gold">Entrar</button>
     </form>
 
-    <a href="https://wa.me/?text=Ol%C3%A1%2C%20gostaria%20de%20solicitar%20meu%20usu%C3%A1rio%20e%20senha%20de%20acesso%20ao%20curso%20de%20M%C3%A1quinas%20Pesadas." target="_blank" class="no-access-link">
+    <a id="whatsappLinkBtn" href="#" target="_blank" class="no-access-link">
       Ainda não tem acesso? Peça seu usuário e senha ao professor.
     </a>
   </div>
@@ -200,19 +140,15 @@
   </footer>
 </div>
 
-<!-- ============ PAINEL ADM / PROFESSOR ============ -->
 <div id="app">
   <aside class="sidebar" id="sidebar">
-    <div class="side-head">
-      <button class="burger" onclick="toggleSidebar()"><div style="background:var(--text);height:2px;margin:3px 0;"></div><div style="background:var(--text);height:2px;margin:3px 0;"></div></button>
-      <span class="brand">Painel do Professor</span>
-    </div>
+    <div class="side-head"><span class="brand"><b>Painel do Professor</b></span></div>
     <nav class="menu">
       <button class="menu-item active" data-view="dashboard" onclick="setView(this)">📊 Dashboard</button>
       <button class="menu-item" data-view="modulos" onclick="setView(this)">📚 Módulos e Aulas</button>
       <button class="menu-item" data-view="alunos" onclick="setView(this)">👨‍🎓 Gestão de Alunos</button>
       <button class="menu-item" data-view="atividades" onclick="setView(this)">📝 Atividades Entregues</button>
-      <button class="menu-item" data-view="config" onclick="setView(this)">⚙ Configurações & Login</button>
+      <button class="menu-item" data-view="config" onclick="setView(this)">⚙ Configurações</button>
     </nav>
     <div class="side-foot">
       Logado como <b>Professor</b>
@@ -221,16 +157,12 @@
   </aside>
 
   <div class="main">
-    <div class="topbar">
-      <h2 id="viewTitle">Dashboard</h2>
-      <span style="font-size:12px;color:var(--text-dim)">Ambiente ADM</span>
-    </div>
+    <div class="topbar"><h2 id="viewTitle">Dashboard</h2><span>Ambiente ADM</span></div>
     <div class="content" id="content"></div>
     <footer class="app-footer">Powered by <b>SeteCinco75tech</b> · v1.0.0</footer>
   </div>
 </div>
 
-<!-- ============ PAINEL DO ALUNO ============ -->
 <div id="aluno-screen" style="display:none;min-height:100vh;flex-direction:column;">
   <div style="background:var(--surface);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;">
     <h2 style="margin:0;font-size:18px;">Área do Aluno · <span id="alunoNomeDisplay" style="color:var(--amber)"></span></h2>
@@ -243,7 +175,6 @@
 <div class="overlay" id="overlay"><div class="modal" id="modalBody"></div></div>
 
 <script>
-/* --- BANCO DE DADOS LOCAL (localStorage) --- */
 function getDB() {
   return JSON.parse(localStorage.getItem('curso_maquinas_db') || JSON.stringify({
     config: {
@@ -251,7 +182,10 @@ function getDB() {
       cursoTitle: "CURSO AVANÇADO",
       subTitle: "OPERAÇÃO DE MÁQUINAS PESADAS 2026",
       instrutor: "Treinamentos com Priscila Lunguinho, Técnica de Segurança do Trabalho",
-      whatsappGrupo: "https://wa.me/"
+      whatsapp: "5511999999999",
+      admUser: "admin",
+      admPass: "123456",
+      imagemIlustrativa: ""
     },
     users: [
       { id: 1, user: 'admin', pass: '123456', role: 'ADM', name: 'Professor' },
@@ -262,37 +196,34 @@ function getDB() {
         id: 1,
         titulo: 'Módulo 1: Introdução e Segurança (NR-11)',
         aulas: [
-          { id: 101, titulo: 'Aula 1 - Normas Regulamentadoras', video: 'https://www.youtube.com/embed/dQw4w9WgXcQ', pdf: '#', atividade: 'Descreva 3 EPIs obrigatórios na operação.' },
-          { id: 102, titulo: 'Aula 2 - Inspeção Diária do Equipamento', video: 'https://www.youtube.com/embed/dQw4w9WgXcQ', pdf: '#', atividade: 'Qual o primeiro item a ser verificado no óleo?' }
+          { id: 101, titulo: 'Aula 1 - Normas Regulamentadoras', video: 'https://www.youtube.com/embed/dQw4w9WgXcQ', pdf: '#', atividade: 'Descreva 3 EPIs obrigatórios.' }
         ]
       }
     ],
-    progresso: {
-      // "aluno1": { aulasConcluidas: [101, 102], atividadesEnviadas: { 101: "Resposta do aluno..." } }
-    },
-    entregas: [] // { aluno: "Carlos Silva", aulaId: 101, aulaTitulo: "Aula 1", resposta: "...", data: "..." }
+    progresso: {},
+    entregas: []
   }));
 }
 
-function saveDB(db) {
-  localStorage.setItem('curso_maquinas_db', JSON.stringify(db));
-}
-
-// Inicializar dados padrão se necessário
-if (!localStorage.getItem('curso_maquinas_db')) {
-  saveDB(getDB());
-}
+function saveDB(db) { localStorage.setItem('curso_maquinas_db', JSON.stringify(db)); }
+if (!localStorage.getItem('curso_maquinas_db')) { saveDB(getDB()); }
 
 let currentUser = null;
 
-// Atualizar textos da tela de login ao carregar
 window.addEventListener('DOMContentLoaded', () => {
+  atualizarInterfaceLogin();
+});
+
+function atualizarInterfaceLogin() {
   const db = getDB();
   document.getElementById('loginInstLabel').textContent = db.config.instituicao;
   document.getElementById('loginCursoTitle').textContent = db.config.cursoTitle;
   document.getElementById('loginSubTitle').textContent = db.config.subTitle;
   document.getElementById('loginInstructorLabel').textContent = db.config.instrutor;
-});
+  
+  const waLink = `https://wa.me/${db.config.whatsapp}?text=Ol%C3%A1%2C%20gostaria%20de%20solicitar%20meu%20usu%C3%A1rio%20e%20senha%20de%20acesso.`;
+  document.getElementById('whatsappLinkBtn').href = waLink;
+}
 
 let selectedRole = 'ADM';
 function setRole(btn, role) {
@@ -304,13 +235,8 @@ function setRole(btn, role) {
 function togglePassVisibility() {
   const input = document.getElementById('loginPass');
   const btn = document.getElementById('btnTogglePass');
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = 'Ocultar';
-  } else {
-    input.type = 'password';
-    btn.textContent = 'Mostrar';
-  }
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = 'Ocultar'; }
+  else { input.type = 'password'; btn.textContent = 'Mostrar'; }
 }
 
 function handleLogin(e) {
@@ -319,9 +245,15 @@ function handleLogin(e) {
   const p = document.getElementById('loginPass').value.trim();
   const db = getDB();
 
-  const found = db.users.find(x => x.user.toLowerCase() === u.toLowerCase() && x.pass === p);
+  let found = null;
+  if(u.toLowerCase() === db.config.admUser.toLowerCase() && p === db.config.admPass) {
+    found = { id: 1, user: db.config.admUser, pass: db.config.admPass, role: 'ADM', name: 'Professor' };
+  } else {
+    found = db.users.find(x => x.user.toLowerCase() === u.toLowerCase() && x.pass === p);
+  }
+
   if (!found) {
-    alert('Usuário ou senha incorretos!\nPadrão ADM: admin / 123456\nPadrão Aluno: aluno1 / 123456');
+    alert('Usuário ou senha incorretos!');
     return false;
   }
 
@@ -348,11 +280,6 @@ function logout() {
   document.getElementById('loginUser').value = '';
 }
 
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('collapsed');
-}
-
-/* --- PAINEL ADM --- */
 function setView(btn) {
   document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -367,72 +294,77 @@ function render(view) {
   const db = getDB();
 
   if (view === 'dashboard') {
-    const totalAlunos = db.users.filter(x => x.role === 'Aluno').length;
-    const totalModulos = db.modulos.length;
-    const totalEntregas = db.entregas.length;
     c.innerHTML = `
       <div class="grid-cards">
-        <div class="card"><div class="label">Alunos Cadastrados</div><div class="value">${totalAlunos}</div></div>
-        <div class="card"><div class="label">Módulos Criados</div><div class="value">${totalModulos}</div></div>
-        <div class="card"><div class="label">Atividades Recebidas</div><div class="value">${totalEntregas}</div></div>
+        <div class="card" onclick="document.querySelector('[data-view=alunos]').click()"><div class="label">Alunos Cadastrados</div><div class="value">${db.users.filter(x => x.role === 'Aluno').length}</div></div>
+        <div class="card" onclick="document.querySelector('[data-view=modulos]').click()"><div class="label">Módulos Criados</div><div class="value">${db.modulos.length}</div></div>
+        <div class="card" onclick="document.querySelector('[data-view=atividades]').click()"><div class="label">Atividades Recebidas</div><div class="value">${db.entregas.length}</div></div>
       </div>
-      <p class="section-title">Bem-vindo ao Painel do Professor</p>
-      <div class="card"><p style="margin:0;font-size:13px;color:var(--text-dim);line-height:1.6">Gerencie os conteúdos, acompanhe as respostas das atividades enviadas pelos operadores e cadastre os acessos dos novos alunos.</p></div>
+      <p class="section-title" onclick="document.querySelector('[data-view=modulos]').click()" style="cursor:pointer">Bem-vindo ao Painel do Professor (Clique para gerenciar conteúdos)</p>
+      <div class="card" onclick="document.querySelector('[data-view=alunos]').click()"><p style="margin:0;font-size:13px;color:var(--text-dim);line-height:1.6">Gerencie os conteúdos, acompanhe as respostas das atividades enviadas pelos operadores e cadastre os acessos dos novos alunos. (Clique aqui para gerenciar alunos)</p></div>
     `;
   } else if (view === 'modulos') {
     c.innerHTML = `
       <button class="btn primary" onclick="openModuloModal()">+ Novo Módulo</button>
-      <p class="section-title">Módulos e Aulas Cadastrados</p>
+      <p class="section-title">Módulos Editáveis do Curso</p>
       ${db.modulos.map(m => `
-        <div class="card" style="margin-bottom:14px;">
+        <div class="card" style="margin-bottom:14px; cursor:default;">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <b>${m.titulo}</b>
-            <button class="btn primary" onclick="openAulaModal(${m.id})">+ Adicionar Aula</button>
+            <div>
+              <button class="btn primary" onclick="openAulaModal(${m.id})">+ Adicionar Aula</button>
+              <button class="btn danger" onclick="deleteModulo(${m.id})">Excluir Módulo</button>
+            </div>
           </div>
           <div style="margin-top:10px;padding-left:10px;border-left:2px solid var(--amber);">
-            ${m.aulas.length ? m.aulas.map(a => `<div style="font-size:12.5px;margin:6px 0;display:flex;justify-content:space-between;"><span>• ${a.titulo}</span> <button class="btn danger" style="padding:2px 6px;font-size:10px;" onclick="deleteAula(${m.id},${a.id})">Excluir</button></div>`).join('') : '<span style="font-size:12px;color:var(--text-dim)">Nenhuma aula cadastrada neste módulo.</span>'}
+            ${m.aulas.length ? m.aulas.map(a => `<div style="font-size:12.5px;margin:6px 0;display:flex;justify-content:space-between;"><span>• ${a.titulo}</span> <button class="btn danger" style="padding:2px 6px;font-size:10px;" onclick="deleteAula(${m.id},${a.id})">Excluir</button></div>`).join('') : '<span style="font-size:12px;color:var(--text-dim)">Nenhuma aula cadastrada.</span>'}
           </div>
         </div>
       `).join('')}
     `;
   } else if (view === 'alunos') {
-    const alunos = db.users.filter(x => x.role === 'Aluno');
     c.innerHTML = `
       <button class="btn primary" onclick="openAlunoModal()">+ Cadastrar Novo Aluno</button>
-      <p class="section-title">Alunos e Dados de Acesso</p>
-      ${alunos.map(al => `
+      <p class="section-title">Gestão de Alunos</p>
+      ${db.users.filter(x => x.role === 'Aluno').map(al => `
         <div class="row">
           <div><b>${al.name}</b><br><span style="font-size:11px;color:var(--text-dim)">Usuário: <code>${al.user}</code> | Senha: <code>${al.pass}</code> \vert{} Curso:${al.curso||'Geral'}</span></div>
-          <button class="btn" onclick="copiarAcesso('${al.user}','${al.pass}')">Copiar Acesso</button>
+          <div>
+            <button class="btn" onclick="copiarAcesso('${al.user}','${al.pass}')">Copiar Acesso</button>
+            <button class="btn danger" onclick="excluirAluno(${al.id})">Excluir</button>
+          </div>
         </div>
       `).join('')}
     `;
   } else if (view === 'atividades') {
     c.innerHTML = `
-      <p class="section-title">Atividades Respondidas pelos Alunos</p>
+      <p class="section-title">Atividades Respondidas</p>
       ${db.entregas.length ? db.entregas.map(e => `
-        <div class="card" style="margin-bottom:10px;">
+        <div class="card" style="margin-bottom:10px; cursor:default;">
           <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--amber)"><b>${e.aluno}</b> <span>${e.data}</span></div>
           <div style="font-size:12.5px;color:var(--text-dim);margin:4px 0"><b>Aula:</b> ${e.aulaTitulo}</div>
           <div style="font-size:13px;background:var(--surface-2);padding:8px;border-radius:6px;margin-top:6px;">${e.resposta}</div>
         </div>
-      `).join('') : '<p style="font-size:13px;color:var(--text-dim)">Nenhuma atividade enviada pelos alunos ainda.</p>'}
+      `).join('') : '<p style="font-size:13px;color:var(--text-dim)">Nenhuma atividade enviada.</p>'}
     `;
   } else if (view === 'config') {
     c.innerHTML = `
-      <p class="section-title">Configurações da Tela de Login e Rodapé</p>
-      <div class="card">
+      <p class="section-title">Configurações Gerais e Credenciais do ADM</p>
+      <div class="card" style="cursor:default;">
+        <div class="field"><label>Novo Usuário ADM</label><input id="cfg_admUser" value="${db.config.admUser}"></div>
+        <div class="field"><label>Nova Senha ADM</label><input id="cfg_admPass" value="${db.config.admPass}"></div>
+        <div class="field"><label>Número do WhatsApp (com DDI e DDD para suporte)</label><input id="cfg_zap" value="${db.config.whatsapp}" placeholder="Ex: 5511999999999"></div>
+        <div class="field"><label>Link de Imagem Ilustrativa (Capa / Banner)</label><input id="cfg_img" value="${db.config.imagemIlustrativa || ''}" placeholder="https://..."></div>
         <div class="field"><label>Instituição</label><input id="cfg_inst" value="${db.config.instituicao}"></div>
         <div class="field"><label>Título do Curso</label><input id="cfg_curso" value="${db.config.cursoTitle}"></div>
         <div class="field"><label>Subtítulo / Destaque</label><input id="cfg_sub" value="${db.config.subTitle}"></div>
         <div class="field"><label>Instrutor / Técnico</label><input id="cfg_instrutor" value="${db.config.instrutor}"></div>
-        <button class="btn primary" onclick="saveConfig()">Salvar Alterações</button>
+        <button class="btn primary" onclick="saveConfig()">Salvar Configurações</button>
       </div>
     `;
   }
 }
 
-/* --- FUNÇÕES MODAL E AÇÕES ADM --- */
 function openModal(html) {
   document.getElementById('modalBody').innerHTML = html;
   document.getElementById('overlay').classList.add('show');
@@ -442,7 +374,7 @@ function closeModal() { document.getElementById('overlay').classList.remove('sho
 function openModuloModal() {
   openModal(`
     <div class="modal-head"><h3>Novo Módulo</h3><button class="btn" onclick="closeModal()">✕</button></div>
-    <div class="field"><label>Título do Módulo</label><input id="mod_titulo" placeholder="Ex: Módulo 2 - Operação Prática"></div>
+    <div class="field"><label>Título do Módulo</label><input id="mod_titulo" placeholder="Ex: Módulo 2 - Hidráulica"></div>
     <button class="btn primary" onclick="salvarModulo()">Salvar Módulo</button>
   `);
 }
@@ -455,14 +387,21 @@ function salvarModulo() {
   closeModal();
   render('modulos');
 }
+function deleteModulo(id) {
+  if(!confirm('Deseja excluir este módulo?')) return;
+  const db = getDB();
+  db.modulos = db.modulos.filter(m => m.id !== id);
+  saveDB(db);
+  render('modulos');
+}
 
 function openAulaModal(modId) {
   openModal(`
     <div class="modal-head"><h3>Adicionar Aula</h3><button class="btn" onclick="closeModal()">✕</button></div>
-    <div class="field"><label>Título da Aula</label><input id="aula_titulo" placeholder="Ex: Aula 1 - Comandos hidráulicos"></div>
-    <div class="field"><label>Link do Vídeo (YouTube/Embed)</label><input id="aula_video" placeholder="https://www.youtube.com/embed/..."></div>
+    <div class="field"><label>Título da Aula</label><input id="aula_titulo" placeholder="Ex: Aula 1"></div>
+    <div class="field"><label>Link do Vídeo (YouTube/Embed)</label><input id="aula_video" placeholder="https://..."></div>
     <div class="field"><label>Material em PDF (Link)</label><input id="aula_pdf" placeholder="https://..."></div>
-    <div class="field"><label>Pergunta da Atividade Prática</label><textarea id="aula_ativ" rows="2" placeholder="O que o operador deve fazer antes de desligar o motor?"></textarea></div>
+    <div class="field"><label>Atividade Prática</label><textarea id="aula_ativ" rows="2"></textarea></div>
     <button class="btn primary" onclick="salvarAula(${modId})">Salvar Aula</button>
   `);
 }
@@ -480,7 +419,7 @@ function salvarAula(modId) {
   render('modulos');
 }
 function deleteAula(modId, aulaId) {
-  if(!confirm('Deseja excluir esta aula?')) return;
+  if(!confirm('Excluir aula?')) return;
   const db = getDB();
   const mod = db.modulos.find(x => x.id === modId);
   mod.aulas = mod.aulas.filter(a => a.id !== aulaId);
@@ -491,11 +430,11 @@ function deleteAula(modId, aulaId) {
 function openAlunoModal() {
   openModal(`
     <div class="modal-head"><h3>Cadastrar Aluno</h3><button class="btn" onclick="closeModal()">✕</button></div>
-    <div class="field"><label>Nome Completo</label><input id="al_nome" placeholder="João da Silva"></div>
-    <div class="field"><label>Usuário de Acesso</label><input id="al_user" placeholder="joao.silva"></div>
+    <div class="field"><label>Nome Completo</label><input id="al_nome"></div>
+    <div class="field"><label>Usuário</label><input id="al_user"></div>
     <div class="field"><label>Senha</label><input id="al_pass" value="123456"></div>
-    <div class="field"><label>Nome do Curso / Turma</label><input id="al_curso" placeholder="Operação de Escavadeira"></div>
-    <button class="btn primary" onclick="salvarAluno()">Cadastrar Aluno</button>
+    <div class="field"><label>Curso</label><input id="al_curso"></div>
+    <button class="btn primary" onclick="salvarAluno()">Cadastrar</button>
   `);
 }
 function salvarAluno() {
@@ -510,41 +449,50 @@ function salvarAluno() {
   closeModal();
   render('alunos');
 }
+function excluirAluno(id) {
+  if(!confirm('Deseja excluir este aluno?')) return;
+  const db = getDB();
+  db.users = db.users.filter(x => x.id !== id);
+  saveDB(db);
+  render('alunos');
+}
 
 function copiarAcesso(u, p) {
-  navigator.clipboard.writeText(`Seu acesso ao Curso de Máquinas Pesadas:\nUsuário: ${u}\nSenha: ${p}`);
-  alert('Dados de acesso copiados para a área de transferência!');
+  navigator.clipboard.writeText(`Usuário: ${u}\nSenha: ${p}`);
+  alert('Acesso copiado!');
 }
 
 function saveConfig() {
   const db = getDB();
-  db.config.instituicao = document.getElementById('cfg_inst').value;
-  db.config.cursoTitle = document.getElementById('cfg_curso').value;
-  db.config.subTitle = document.getElementById('cfg_sub').value;
-  db.config.instrutor = document.getElementById('cfg_instrutor').value;
+  db.config.admUser = document.getElementById('cfg_admUser').value.trim();
+  db.config.admPass = document.getElementById('cfg_admPass').value.trim();
+  db.config.whatsapp = document.getElementById('cfg_zap').value.trim();
+  db.config.imagemIlustrativa = document.getElementById('cfg_img').value.trim();
+  db.config.instituicao = document.getElementById('cfg_inst').value.trim();
+  db.config.cursoTitle = document.getElementById('cfg_curso').value.trim();
+  db.config.subTitle = document.getElementById('cfg_sub').value.trim();
+  db.config.instrutor = document.getElementById('cfg_instrutor').value.trim();
   saveDB(db);
+  atualizarInterfaceLogin();
   alert('Configurações salvas com sucesso!');
 }
 
-/* --- PAINEL DO ALUNO & TRAVA DE PROGRESSÃO --- */
 function renderAluno() {
   const c = document.getElementById('alunoContent');
   const db = getDB();
   const prog = db.progresso[currentUser.user] || { aulasConcluidas: [] };
 
   c.innerHTML = `
-    <p class="section-title" style="margin-top:0">Trilha de Aprendizagem (Liberação Progressiva)</p>
+    ${db.config.imagemIlustrativa ? `<div style="margin-bottom:16px;text-align:center;"><img src="${db.config.imagemIlustrativa}" style="max-width:100%;max-height:180px;border-radius:8px;object-fit:cover;" alt="Capa"></div>` : ''}
+    <p class="section-title" style="margin-top:0">Trilha de Aprendizagem</p>
     ${db.modulos.map((m, mIdx) => {
-      // Verificar se o módulo anterior foi 100% concluído para liberar este
       let modAnteriorLiberado = true;
       if (mIdx > 0) {
         const modAnt = db.modulos[mIdx - 1];
-        const concluidasAnt = modAnt.aulas.every(a => prog.aulasConcluidas.includes(a.id));
-        modAnteriorLiberado = concluidasAnt;
+        modAnteriorLiberado = modAnt.aulas.every(a => prog.aulasConcluidas.includes(a.id));
       }
-
       return `
-        <div class="card" style="margin-bottom:16px; opacity: ${modAnteriorLiberado ? '1' : '0.6'}">
+        <div class="card" style="margin-bottom:16px; opacity: ${modAnteriorLiberado ? '1' : '0.6'}; cursor:default;">
           <h3>${m.titulo}${!modAnteriorLiberado ? '🔒 (Conclua o módulo anterior)' : ''}</h3>
           <div style="margin-top:12px;">
             ${m.aulas.map(a => {
@@ -552,7 +500,7 @@ function renderAluno() {
               return `
                 <div class="row" style="background:var(--surface-2);">
                   <span>${a.titulo} ${concluida ? '✅' : ''}</span>
-                  <button class="btn ${concluida ? '' : 'primary'}" ${!modAnteriorLiberado ? 'disabled' : ''} onclick="abrirAula(${a.id})">${concluida ? 'Revisar Aula' : 'Assistir / Responder'}</button>
+                  <button class="btn ${concluida ? '' : 'primary'}" ${!modAnteriorLiberado ? 'disabled' : ''} onclick="abrirAula(${a.id})">${concluida ? 'Revisar' : 'Assistir / Responder'}</button>
                 </div>
               `;
             }).join('')}
@@ -566,10 +514,7 @@ function renderAluno() {
 function abrirAula(aulaId) {
   const db = getDB();
   let aulaEncontrada = null;
-  db.modulos.forEach(m => {
-    const a = m.aulas.find(x => x.id === aulaId);
-    if(a) aulaEncontrada = a;
-  });
+  db.modulos.forEach(m => { const a = m.aulas.find(x => x.id === aulaId); if(a) aulaEncontrada = a; });
   if(!aulaEncontrada) return;
 
   const prog = db.progresso[currentUser.user] || { aulasConcluidas: [], respostas: {} };
@@ -579,48 +524,36 @@ function abrirAula(aulaId) {
   openModal(`
     <div class="modal-head"><h3>${aulaEncontrada.titulo}</h3><button class="btn" onclick="closeModal()">✕</button></div>
     ${aulaEncontrada.video ? `<div style="position:relative;padding-bottom:56.25%;height:0;margin-bottom:12px;"><iframe src="${aulaEncontrada.video}" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px;" frameborder="0" allowfullscreen></iframe></div>` : ''}
-    ${aulaEncontrada.pdf ? `<p><a href="${aulaEncontrada.pdf}" target="_blank" style="color:var(--amber)">📄 Baixar Material de Apoio em PDF</a></p>` : ''}
-    <hr style="border-color:var(--line);margin:16px 0;">
-    <p><b>Atividade Prática:</b> ${aulaEncontrada.atividade || 'Nenhuma atividade cadastrada para esta aula.'}</p>
-    <div class="field"><textarea id="respostaAluno" rows="3" placeholder="Digite sua resposta aqui...">${respSalva}</textarea></div>
+    ${aulaEncontrada.pdf ? `<p><a href="${aulaEncontrada.pdf}" target="_blank" style="color:var(--amber)">📄 Baixar PDF</a></p>` : ''}
+    <p><b>Atividade:</b> ${aulaEncontrada.atividade || 'Nenhuma.'}</p>
+    <div class="field"><textarea id="respostaAluno" rows="3">${respSalva}</textarea></div>
     <div style="display:flex;gap:10px;">
       <button class="btn primary" onclick="enviarAtividade(${aulaId}, '${aulaEncontrada.titulo}')">Enviar Resposta</button>
-      <button class="btn ${jaConcluida ? '' : 'primary'}" onclick="marcarConcluida(${aulaId})">${jaConcluida ? 'Aula já Concluída' : 'Marcar Aula como Concluída'}</button>
+      <button class="btn ${jaConcluida ? '' : 'primary'}" onclick="marcarConcluida(${aulaId})">${jaConcluida ? 'Concluída' : 'Marcar como Concluída'}</button>
     </div>
   `);
 }
 
 function enviarAtividade(aulaId, aulaTitulo) {
   const resp = document.getElementById('respostaAluno').value.trim();
-  if(!resp) { alert('Digite sua resposta antes de enviar.'); return; }
-  
+  if(!resp) { alert('Digite sua resposta.'); return; }
   const db = getDB();
   if(!db.progresso[currentUser.user]) db.progresso[currentUser.user] = { aulasConcluidas: [], respostas: {} };
   db.progresso[currentUser.user].respostas[aulaId] = resp;
-
-  // Registrar entrega para o ADM
-  db.entregas.push({
-    aluno: currentUser.name,
-    aulaId,
-    aulaTitulo,
-    resposta: resp,
-    data: new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
-  });
-
+  db.entregas.push({ aluno: currentUser.name, aulaId, aulaTitulo, resposta: resp, data: new Date().toLocaleDateString('pt-BR') });
   saveDB(db);
-  alert('Atividade enviada com sucesso para o professor!');
+  alert('Atividade enviada!');
   closeModal();
 }
 
 function marcarConcluida(aulaId) {
   const db = getDB();
   if(!db.progresso[currentUser.user]) db.progresso[currentUser.user] = { aulasConcluidas: [], respostas: {} };
-  
   if(!db.progresso[currentUser.user].aulasConcluidas.includes(aulaId)) {
     db.progresso[currentUser.user].aulasConcluidas.push(aulaId);
     saveDB(db);
   }
-  alert('Aula marcada como concluída! Próxima aula liberada.');
+  alert('Aula concluída!');
   closeModal();
   renderAluno();
 }
