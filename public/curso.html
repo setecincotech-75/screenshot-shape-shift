@@ -63,7 +63,8 @@
   .login-footer, footer.app-footer { width: 100%; text-align: center; font-size: 11px; color: var(--text-dim); padding: 16px 10px; border-top: 1px solid var(--line); background: var(--surface); margin-top: auto; }
   .login-footer b, footer.app-footer b { color: var(--amber); }
 
-  #app { display: none; min-height: 100vh; flex-direction: column; }
+  #app { display: none; min-height: 100vh; flex-direction: row; }
+  @media(max-width:760px){ #app.show{flex-direction:column;} .sidebar{width:100%;} nav.menu{display:flex;flex-wrap:wrap;gap:4px;} .menu-item{width:auto;} .content{padding:16px;} .row{flex-wrap:wrap;} }
   #app.show { display: flex; }
   .sidebar { width: 230px; background: var(--surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; z-index: 30; }
   .side-head { display: flex; align-items: center; gap: 10px; padding: 18px 16px; border-bottom: 1px solid var(--line); }
@@ -74,7 +75,7 @@
   .menu-item.active { background: var(--ember); color: #131313; }
   .side-foot { padding: 14px 16px; border-top: 1px solid var(--line); font-size: 10.5px; color: var(--text-dim); }
 
-  .main { flex: 1; display: flex; flex-direction: column; }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 26px; border-bottom: 1px solid var(--line); background: var(--surface); }
   .content { padding: 26px; flex: 1; }
 
@@ -114,7 +115,7 @@
       <button type="button" onclick="setRole(this,'Aluno')">Aluno</button>
     </div>
 
-    <form onsubmit="handleLogin(event); return false;">
+    <form id="loginForm" onsubmit="return handleLogin(event)">
       <div class="field">
         <label>USUÁRIO</label>
         <input type="text" id="loginUser" placeholder="seu-usuario" required autocomplete="username">
@@ -259,7 +260,7 @@ function handleLogin(e) {
     currentUser = { id: 1, user: db.config.admUser, role: 'ADM', name: 'Professor' };
   } else {
     // Validação dos Alunos cadastrados
-    currentUser = db.users.find(x => x.user.toLowerCase() === u.toLowerCase() && x.pass === p);
+    currentUser = db.users.find(x => x.role === 'Aluno' && x.user.toLowerCase() === u.toLowerCase() && x.pass === p);
   }
 
   if (!currentUser) {
@@ -318,7 +319,7 @@ function render(view) {
       <button class="btn primary" onclick="openModuloModal()">+ Novo Módulo</button>
       <p class="section-title">Módulos Editáveis do Curso</p>
       ${db.modulos.map(m => `
-        <div class="card" style="margin-bottom:14px; cursor:default;">
+        <div class="card" style="margin-bottom:14px; cursor:default;" data-mod-id="${m.id}">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <b>${m.titulo}</b>
             <div>
@@ -338,7 +339,7 @@ function render(view) {
       <p class="section-title">Gestão de Alunos</p>
       ${db.users.filter(x => x.role === 'Aluno').map(al => `
         <div class="row">
-          <div><b>${al.name}</b><br><span style="font-size:11px;color:var(--text-dim)">Usuário: <code>${al.user}</code> | Senha: <code>${al.pass}</code> \vert{} Curso:${al.curso||'Geral'}</span></div>
+          <div><b>${al.name}</b><br><span style="font-size:11px;color:var(--text-dim)">Usuário: <code>${al.user}</code> | Senha: <code>${al.pass}</code> | Curso: ${al.curso||'Geral'}</span></div>
           <div>
             <button class="btn" onclick="copiarAcesso('${al.user}','${al.pass}')">Copiar Acesso</button>
             <button class="btn danger" onclick="excluirAluno(${al.id})">Excluir</button>
