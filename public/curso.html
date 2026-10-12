@@ -340,7 +340,7 @@ function render(view) {
             </div>
           </div>
           <div style="margin-top:10px;padding-left:10px;border-left:2px solid var(--amber);">
-            ${m.aulas.length ? m.aulas.map(a => `<div style="font-size:12.5px;margin:6px 0;display:flex;justify-content:space-between;"><span>• ${a.titulo}</span> <button class="btn danger" style="padding:2px 6px;font-size:10px;" onclick="deleteAula(${m.id},${a.id})">Excluir</button></div>`).join('') : '<span style="font-size:12px;color:var(--text-dim)">Nenhuma aula cadastrada.</span>'}
+            ${m.aulas.length ? m.aulas.map(a => `<div style="font-size:12.5px;margin:6px 0;display:flex;justify-content:space-between;"><span>• ${a.titulo}${driveInfo(a.videoOriginal||a.video)||driveInfo(a.drive) ? ' <span style="color:var(--green);font-size:10.5px">[Drive]</span>' : ''}</span> <span><button class="btn" style="padding:2px 6px;font-size:10px;" onclick="openAulaModal(${m.id},${a.id})">Editar</button> <button class="btn danger" style="padding:2px 6px;font-size:10px;" onclick="deleteAula(${m.id},${a.id})">Excluir</button></span></div>`).join('') : '<span style="font-size:12px;color:var(--text-dim)">Nenhuma aula cadastrada.</span>'}
           </div>
         </div>
       `).join('')}
@@ -418,25 +418,67 @@ function deleteModulo(id) {
   render('modulos');
 }
 
-function openAulaModal(modId) {
-  openModal(`
-    <div class="modal-head"><h3>Adicionar Aula</h3><button class="btn" onclick="closeModal()">✕</button></div>
-    <div class="field"><label>Título da Aula</label><input id="aula_titulo" placeholder="Ex: Aula 1"></div>
-    <div class="field"><label>Link do Vídeo (YouTube/Embed)</label><input id="aula_video" placeholder="https://..."></div>
-    <div class="field"><label>Material em PDF (Link)</label><input id="aula_pdf" placeholder="https://..."></div>
-    <div class="field"><label>Atividade Prática</label><textarea id="aula_ativ" rows="2"></textarea></div>
-    <button class="btn primary" onclick="salvarAula(${modId})">Salvar Aula</button>
-  `);
+/* --- GOOGLE DRIVE: detecção e conversão de links --- */
+function driveInfo(url) {
+  url = (url || '').trim();
+  if (!url) return null;
+  let m;
+  if ((m = url.match(/drive\.google\.com\/drive\/(?:u\/\d+\/)?folders\/([\w-]+)/))) return { tipo: 'pasta', id: m[1], embed: `https://drive.google.com/embeddedfolderview?id=${m[1]}#list`, abrir: `https://drive.google.com/drive/folders/${m[1]}` };
+  if ((m = url.match(/docs\.google\.com\/(document|presentation|spreadsheets)\/d\/([\w-]+)/))) return { tipo: 'doc', id: m[2], embed: `https://docs.google.com/${m[1]}/d/${m[2]}/preview`, abrir: `https://docs.google.com/${m[1]}/d/${m[2]}/view` };
+  if ((m = url.match(/drive\.google\.com\/file\/d\/([\w-]+)/)) || (m = url.match(/drive\.google\.com\/(?:open|uc)\?(?:.*&)?id=([\w-]+)/))) return { tipo: 'arquivo', id: m[1], embed: `https://drive.google.com/file/d/${m[1]}/preview`, abrir: `https://drive.google.com/file/d/${m[1]}/view` };
+  return null;
 }
-function salvarAula(modId) {
-  const titulo = document.getElementById('aula_titulo').value.trim();
-  const video = document.getElementById('aula_video').value.trim();
-  const pdf = document.getElementById('aula_pdf').value.trim();
-  const atividade = document.getElementById('aula_ativ').value.trim();
-  if(!titulo) return;
+function toVideoEmbed(url) {
+  url = (url || '').trim();
+  if (!url) return '';
+  const d = driveInfo(url);
+  if (d && d.tipo === 'arquivo') return d.embed;
+  let m;
+  if ((m = url.match(/(?:youtube\.com\/watch\?(?:.*&)?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{11})/))) return `https://www.youtube.com/embed/${m[1]}`;
+  return url;
+}
+function drivePreviewMsg() {
+  const el = document.getElementById('drive_hint'); if (!el) return;
+  const v = document.getElementById('aula_video').value, d = document.getElementById('aula_drive').value;
+  const msgs = [];
+  if (driveInfo(v)) msgs.push('✅ Vídeo do Drive detectado — será exibido no player incorporado.');
+  const di = driveInfo(d);
+  if (di) msgs.push(di.tipo === 'pasta' ? '✅ Pasta do Drive detectada — os arquivos aparecerão listados na aula.' : '✅ Documento/PDF do Drive detectado — será exibido como material de apoio.');
+  else if (d.trim()) msgs.push('⚠ Link não reconhecido como Google Drive.');
+  el.innerHTML = msgs.join('<br>') + (msgs.length ? '<br><span style="color:var(--text-dim)">Lembre-se: o arquivo/pasta precisa estar compartilhado como "Qualquer pessoa com o link".</span>' : '');
+}
+
+function openAulaModal(modId, aulaId) {
   const db = getDB();
   const mod = db.modulos.find(x => x.id === modId);
-  mod.aulas.push({ id: Date.now(), titulo, video, pdf, atividade });
+  const a = (aulaId && mod) ? mod.aulas.find(x => x.id === aulaId) : null;
+  const esc = v => String(v || '').replace(/"/g, '&quot;');
+  openModal(`
+    <div class="modal-head"><h3>${a ? 'Editar Aula' : 'Adicionar Aula'}</h3><button class="btn" onclick="closeModal()">✕</button></div>
+    <div class="field"><label>Título da Aula</label><input id="aula_titulo" placeholder="Ex: Aula 1" value="${esc(a && a.titulo)}"></div>
+    <div class="field"><label>Link do Vídeo (YouTube ou Google Drive)</label><input id="aula_video" oninput="drivePreviewMsg()" placeholder="https://drive.google.com/file/d/... ou YouTube" value="${esc(a && a.videoOriginal || a && a.video)}"></div>
+    <div class="field"><label>Link do Google Drive (Pasta ou Arquivo)</label><input id="aula_drive" oninput="drivePreviewMsg()" placeholder="https://drive.google.com/drive/folders/... ou docs.google.com/..." value="${esc(a && a.drive)}"></div>
+    <div id="drive_hint" style="font-size:11.5px;color:var(--green);margin:-6px 0 12px;line-height:1.5"></div>
+    <div class="field"><label>Material em PDF (Link)</label><input id="aula_pdf" placeholder="https://..." value="${esc(a && a.pdf)}"></div>
+    <div class="field"><label>Texto da Aula / Conteúdo</label><textarea id="aula_texto" rows="3">${(a && a.texto) || ''}</textarea></div>
+    <div class="field"><label>Atividade Prática</label><textarea id="aula_ativ" rows="2">${(a && a.atividade) || ''}</textarea></div>
+    <button class="btn primary" onclick="salvarAula(${modId}${a ? ',' + a.id : ''})">Salvar Aula</button>
+  `);
+  drivePreviewMsg();
+}
+function salvarAula(modId, aulaId) {
+  const titulo = document.getElementById('aula_titulo').value.trim();
+  const videoOriginal = document.getElementById('aula_video').value.trim();
+  const drive = document.getElementById('aula_drive').value.trim();
+  const pdf = document.getElementById('aula_pdf').value.trim();
+  const texto = document.getElementById('aula_texto').value.trim();
+  const atividade = document.getElementById('aula_ativ').value.trim();
+  if(!titulo) { alert('Informe o título da aula.'); return; }
+  const db = getDB();
+  const mod = db.modulos.find(x => x.id === modId);
+  const dados = { titulo, videoOriginal, video: toVideoEmbed(videoOriginal), drive, pdf, texto, atividade };
+  const existente = aulaId ? mod.aulas.find(x => x.id === aulaId) : null;
+  if (existente) Object.assign(existente, dados); else mod.aulas.push({ id: Date.now(), ...dados });
   saveDB(db);
   closeModal();
   render('modulos');
@@ -546,7 +588,10 @@ function abrirAula(aulaId) {
 
   openModal(`
     <div class="modal-head"><h3>${aulaEncontrada.titulo}</h3><button class="btn" onclick="closeModal()">✕</button></div>
-    ${aulaEncontrada.video ? `<div style="position:relative;padding-bottom:56.25%;height:0;margin-bottom:12px;"><iframe src="${aulaEncontrada.video}" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px;" frameborder="0" allowfullscreen></iframe></div>` : ''}
+    ${aulaEncontrada.texto ? `<p style="font-size:13.5px;line-height:1.6;white-space:pre-wrap;">${aulaEncontrada.texto}</p>` : ''}
+    ${(() => { const d = driveInfo(aulaEncontrada.drive); if (!d) return aulaEncontrada.drive ? `<p><a href="${aulaEncontrada.drive}" target="_blank" style="color:var(--amber)">📁 Material de apoio</a></p>` : '';
+      return `<p class="section-title" style="margin:8px 0">📁 Material de apoio (Google Drive)</p><div style="position:relative;padding-bottom:${d.tipo==='pasta'?'60%':'75%'};height:0;margin-bottom:6px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;"><iframe src="${d.embed}" style="position:absolute;inset:0;width:100%;height:100%;border:0;" allow="autoplay"></iframe></div><p style="margin:0 0 12px"><a href="${d.abrir}" target="_blank" style="color:var(--amber);font-size:12.5px">Abrir no Google Drive ↗</a></p>`; })()}
+    ${aulaEncontrada.video ? `<div style="position:relative;padding-bottom:56.25%;height:0;margin-bottom:12px;"><iframe src="${toVideoEmbed(aulaEncontrada.video)}" allow="autoplay; fullscreen" style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px;" frameborder="0" allowfullscreen></iframe></div>` : ''}
     ${aulaEncontrada.pdf ? `<p><a href="${aulaEncontrada.pdf}" target="_blank" style="color:var(--amber)">📄 Baixar PDF</a></p>` : ''}
     <p><b>Atividade:</b> ${aulaEncontrada.atividade || 'Nenhuma.'}</p>
     <div class="field"><textarea id="respostaAluno" rows="3">${respSalva}</textarea></div>
