@@ -189,7 +189,7 @@ function getDB() {
   return db;
 }
 function defaultDB() {
-  return JSON.parse(localStorage.getItem('curso_maquinas_db') || JSON.stringify({
+  return JSON.parse(JSON.stringify({
     config: {
       instituicao: "SISTEMA NACIONAL DE APOIO AO CAMPO",
       cursoTitle: "CURSO AVANÇADO",
