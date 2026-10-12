@@ -114,7 +114,7 @@
       <button type="button" onclick="setRole(this,'Aluno')">Aluno</button>
     </div>
 
-    <form onsubmit="return handleLogin(event)">
+    <form onsubmit="handleLogin(event); return false;">
       <div class="field">
         <label>USUÁRIO</label>
         <input type="text" id="loginUser" placeholder="seu-usuario" required autocomplete="username">
@@ -240,37 +240,47 @@ function togglePassVisibility() {
 }
 
 function handleLogin(e) {
-  e.preventDefault();
-  const u = document.getElementById('loginUser').value.trim();
-  const p = document.getElementById('loginPass').value.trim();
-  const db = getDB();
-
-  let found = null;
-  if(u.toLowerCase() === db.config.admUser.toLowerCase() && p === db.config.admPass) {
-    found = { id: 1, user: db.config.admUser, pass: db.config.admPass, role: 'ADM', name: 'Professor' };
-  } else {
-    found = db.users.find(x => x.user.toLowerCase() === u.toLowerCase() && x.pass === p);
-  }
-
-  if (!found) {
-    alert('Usuário ou senha incorretos!');
+  if (e) e.preventDefault();
+  
+  const uInput = document.getElementById('loginUser');
+  const pInput = document.getElementById('loginPass');
+  
+  if (!uInput || !pInput) {
+    alert('Erro: Campos de login não encontrados na tela.');
     return false;
   }
 
-  currentUser = found;
+  const u = uInput.value.trim();
+  const p = pInput.value.trim();
+  const db = getDB();
+
+  // Validação do ADM
+  if (u.toLowerCase() === db.config.admUser.toLowerCase() && p === db.config.admPass) {
+    currentUser = { id: 1, user: db.config.admUser, role: 'ADM', name: 'Professor' };
+  } else {
+    // Validação dos Alunos cadastrados
+    currentUser = db.users.find(x => x.user.toLowerCase() === u.toLowerCase() && x.pass === p);
+  }
+
+  if (!currentUser) {
+    alert('Usuário ou senha incorretos!\nVerifique suas credenciais.');
+    return false;
+  }
+
+  // Ocultar tela de login e exibir o painel correspondente
   document.getElementById('login-screen').style.display = 'none';
 
-  if (found.role === 'ADM') {
+  if (currentUser.role === 'ADM') {
     document.getElementById('app').classList.add('show');
     render('dashboard');
   } else {
     document.getElementById('aluno-screen').style.display = 'flex';
-    document.getElementById('alunoNomeDisplay').textContent = found.name;
+    document.getElementById('alunoNomeDisplay').textContent = currentUser.name;
     renderAluno();
   }
+
   return false;
 }
-
 function logout() {
   currentUser = null;
   document.getElementById('app').classList.remove('show');
