@@ -328,7 +328,10 @@ function render(view) {
     `;
   } else if (view === 'modulos') {
     c.innerHTML = `
-      <button class="btn primary" onclick="openModuloModal()">+ Novo Módulo</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn primary" onclick="openModuloModal()">+ Novo Módulo</button>
+        <button class="btn" onclick="openDriveImportModal()">↗ Vincular material do Google Drive</button>
+      </div>
       <p class="section-title">Módulos Editáveis do Curso</p>
       ${db.modulos.map(m => `
         <div class="card" style="margin-bottom:14px; cursor:default;" data-mod-id="${m.id}">
@@ -446,6 +449,60 @@ function drivePreviewMsg() {
   if (di) msgs.push(di.tipo === 'pasta' ? '✅ Pasta do Drive detectada — os arquivos aparecerão listados na aula.' : '✅ Documento/PDF do Drive detectado — será exibido como material de apoio.');
   else if (d.trim()) msgs.push('⚠ Link não reconhecido como Google Drive.');
   el.innerHTML = msgs.join('<br>') + (msgs.length ? '<br><span style="color:var(--text-dim)">Lembre-se: o arquivo/pasta precisa estar compartilhado como "Qualquer pessoa com o link".</span>' : '');
+}
+
+function openDriveImportModal() {
+  const db = getDB();
+  if (!db.modulos.length) {
+    alert('Crie um módulo antes de vincular um material.');
+    return;
+  }
+  const options = db.modulos.map(m => `<option value="${m.id}">${String(m.titulo).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</option>`).join('');
+  openModal(`
+    <div class="modal-head"><h3>Vincular material do Google Drive</h3><button class="btn" onclick="closeModal()">✕</button></div>
+    <p style="font-size:12px;color:var(--text-dim);line-height:1.5;margin-top:0">Adicione um documento, PDF ou pasta compartilhada a um módulo existente. O arquivo precisa permitir acesso a quem tem o link.</p>
+    <div class="field"><label>MÓDULO DE DESTINO</label><select id="drive_import_mod">${options}</select></div>
+    <div class="field"><label>TÍTULO DA AULA / MATERIAL</label><input id="drive_import_title" placeholder="Ex.: Apostila de Segurança NR-11"></div>
+    <div class="field"><label>LINK COMPARTILHADO DO GOOGLE DRIVE</label><input id="drive_import_url" type="url" placeholder="https://drive.google.com/..." oninput="previewDriveImport()"></div>
+    <div id="drive_import_hint" style="font-size:12px;color:var(--text-dim);line-height:1.5;margin-bottom:12px">Cole um link de arquivo, documento Google ou pasta compartilhada.</div>
+    <button class="btn primary" onclick="importDriveMaterial()">Vincular material ao módulo</button>
+  `);
+}
+function previewDriveImport() {
+  const hint = document.getElementById('drive_import_hint');
+  const input = document.getElementById('drive_import_url');
+  if (!hint || !input) return;
+  const info = driveInfo(input.value);
+  hint.textContent = info
+    ? (info.tipo === 'pasta' ? 'Pasta do Drive reconhecida. O aluno poderá abrir a pasta compartilhada.' : 'Documento/arquivo reconhecido. O material será vinculado à aula para visualização ou abertura.')
+    : (input.value.trim() ? 'Link ainda não reconhecido. Use um link compartilhado do Google Drive ou Google Docs.' : 'Cole um link de arquivo, documento Google ou pasta compartilhada.');
+  hint.style.color = info ? 'var(--green)' : 'var(--text-dim)';
+}
+function importDriveMaterial() {
+  const moduleId = Number(document.getElementById('drive_import_mod').value);
+  const title = document.getElementById('drive_import_title').value.trim();
+  const url = document.getElementById('drive_import_url').value.trim();
+  const info = driveInfo(url);
+  if (!title) { alert('Informe um título para o material.'); return; }
+  if (!info) { alert('Cole um link válido de arquivo, documento Google ou pasta do Drive.'); return; }
+  const db = getDB();
+  const mod = db.modulos.find(m => m.id === moduleId);
+  if (!mod) { alert('O módulo selecionado não foi encontrado. Atualize a tela e tente novamente.'); return; }
+  const aula = {
+    id: Date.now(),
+    titulo: title,
+    videoOriginal: '',
+    video: '',
+    drive: url,
+    pdf: info.tipo === 'arquivo' ? url : '',
+    texto: 'Material vinculado do Google Drive. Abra o material pelo link compartilhado.',
+    atividade: ''
+  };
+  mod.aulas.push(aula);
+  saveDB(db);
+  closeModal();
+  render('modulos');
+  alert('Material vinculado ao módulo. Acesso depende das permissões de compartilhamento do Google Drive.');
 }
 
 function openAulaModal(modId, aulaId) {
