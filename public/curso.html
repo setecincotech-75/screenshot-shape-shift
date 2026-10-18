@@ -117,8 +117,8 @@
 
     <form id="loginForm" onsubmit="return handleLogin(event)">
       <div class="field">
-        <label>USUÁRIO</label>
-        <input type="text" id="loginUser" placeholder="seu-usuario" required autocomplete="username">
+        <label>E-MAIL</label>
+        <input type="email" id="loginUser" placeholder="voce@exemplo.com" required autocomplete="username" inputmode="email">
       </div>
       <div class="field">
         <label>SENHA</label>
@@ -176,13 +176,25 @@
 <div class="overlay" id="overlay"><div class="modal" id="modalBody"></div></div>
 
 <script>
+const SUPABASE_URL = 'https://fmaofurlpxrsihtcqsce.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_PKT2mNqYdVOmXSjIzDK5eg_qVPvI1eA';
+let supabaseClientPromise;
+
+function getSupabaseClient() {
+  if (!supabaseClientPromise) {
+    supabaseClientPromise = import('https://esm.sh/@supabase/supabase-js@2')
+      .then(({ createClient }) => createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      }));
+  }
+  return supabaseClientPromise;
+}
+
 function getDB() {
   const def = defaultDB();
   let db; try { db = JSON.parse(localStorage.getItem('curso_maquinas_db')); } catch(e) { db = null; }
   if (!db || typeof db !== 'object') return def;
   db.config = Object.assign({}, def.config, db.config || {});
-  if (!db.config.admUser) db.config.admUser = def.config.admUser;
-  if (!db.config.admPass) db.config.admPass = def.config.admPass;
   ['users','modulos','entregas'].forEach(k => { if (!Array.isArray(db[k])) db[k] = def[k]; });
   db.modulos.forEach(m => { if (!Array.isArray(m.aulas)) m.aulas = []; });
   if (!db.progresso || typeof db.progresso !== 'object') db.progresso = {};
@@ -196,14 +208,9 @@ function defaultDB() {
       subTitle: "OPERAÇÃO DE MÁQUINAS PESADAS 2026",
       instrutor: "Treinamentos com Priscila Lunguinho, Técnica de Segurança do Trabalho",
       whatsapp: "5511999999999",
-      admUser: "admin",
-      admPass: "123456",
       imagemIlustrativa: ""
     },
-    users: [
-      { id: 1, user: 'admin', pass: '123456', role: 'ADM', name: 'Professor' },
-      { id: 2, user: 'aluno1', pass: '123456', role: 'Aluno', name: 'Carlos Silva', curso: 'Escavadeira Hidráulica' }
-    ],
+    users: [],
     modulos: [
       {
         id: 1,
@@ -225,6 +232,9 @@ let currentUser = null;
 
 window.addEventListener('DOMContentLoaded', () => {
   atualizarInterfaceLogin();
+  getSupabaseClient().catch(error => {
+    console.error('Não foi possível inicializar o Supabase:', error);
+  });
 });
 
 function atualizarInterfaceLogin() {
@@ -252,7 +262,7 @@ function togglePassVisibility() {
   else { input.type = 'password'; btn.textContent = 'Mostrar'; }
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
   if (e) e.preventDefault();
   
   const uInput = document.getElementById('loginUser');
@@ -268,33 +278,78 @@ function handleLogin(e) {
   const db = getDB();
 
   // Validação do ADM
-  if (u.toLowerCase() === String(db.config.admUser).toLowerCase() && p === db.config.admPass) {
-    currentUser = { id: 1, user: db.config.admUser, role: 'ADM', name: 'Professor' };
-  } else {
-    // Validação dos Alunos cadastrados
-    currentUser = db.users.find(x => x.role === 'Aluno' && String(x.user||'').toLowerCase() === u.toLowerCase() && x.pass === p);
-  }
+  const u = uInput.value.trim().toLowerCase();
+  const p = pInput.value;
+  const submitButton = document.querySelector('#loginForm button[type="submit"]');
+  if (!u || !p) return false;
+  if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'Conectando...'; }
 
-  if (!currentUser) {
-    alert('Usuário ou senha incorretos!\nVerifique suas credenciais.');
+  try {
+    const client = await getSupabaseClient();
+    const { data, error } = await client.auth.signInWithPassword({ email: u, password: p });
+    if (error || !data.user) {
+      alert('Não foi possível entrar. Confira seu e-mail e senha.');
+      return false;
+    }
+
+    const [profileResult, roleResult] = await Promise.all([
+      client.from('profiles').select('full_name').eq('id', data.user.id).maybeSingle(),
+      client.from('user_roles').select('role').eq('user_id', data.user.id)
+    ]);
+
+    if (profileResult.error || roleResult.error) {
+      await client.auth.signOut();
+      console.error('Erro ao carregar perfil/permissões:', profileResult.error || roleResult.error);
+      alert('Sua conta foi autenticada, mas não foi possível validar suas permissões. Tente novamente ou contate o administrador.');
+      return false;
+    }
+
+    const roles = (roleResult.data || []).map(item => String(item.role || '').toLowerCase());
+    const isStaff = roles.some(role => ['admin', 'teacher', 'adm', 'professor'].includes(role));
+    const isStudent = roles.includes('student') || roles.includes('aluno');
+    const expectedStaff = selectedRole === 'ADM';
+
+    if ((expectedStaff && !isStaff) || (!expectedStaff && !isStudent)) {
+      await client.auth.signOut();
+      alert(expectedStaff
+        ? 'Esta conta não possui permissão de professor/administrador.'
+        : 'Esta conta não possui permissão de aluno.');
+      return false;
+    }
+
+    currentUser = {
+      id: data.user.id,
+      user: data.user.email,
+      email: data.user.email,
+      role: expectedStaff ? 'ADM' : 'Aluno',
+      name: profileResult.data?.full_name || data.user.email
+    };
+
+    document.getElementById('login-screen').style.display = 'none';
+    if (currentUser.role === 'ADM') {
+      document.getElementById('app').classList.add('show');
+      render('dashboard');
+    } else {
+      document.getElementById('aluno-screen').style.display = 'flex';
+      document.getElementById('alunoNomeDisplay').textContent = currentUser.name;
+      renderAluno();
+    }
     return false;
+  } catch (error) {
+    console.error('Falha na autenticação Supabase:', error);
+    alert('Não foi possível conectar ao serviço de autenticação. Verifique sua conexão e tente novamente.');
+    return false;
+  } finally {
+    if (submitButton) { submitButton.disabled = false; submitButton.textContent = 'Entrar'; }
   }
-
-  // Ocultar tela de login e exibir o painel correspondente
-  document.getElementById('login-screen').style.display = 'none';
-
-  if (currentUser.role === 'ADM') {
-    document.getElementById('app').classList.add('show');
-    render('dashboard');
-  } else {
-    document.getElementById('aluno-screen').style.display = 'flex';
-    document.getElementById('alunoNomeDisplay').textContent = currentUser.name;
-    renderAluno();
-  }
-
-  return false;
 }
-function logout() {
+async function logout() {
+  try {
+    const client = await getSupabaseClient();
+    await client.auth.signOut();
+  } catch (error) {
+    console.error('Erro ao encerrar sessão Supabase:', error);
+  }
   currentUser = null;
   document.getElementById('app').classList.remove('show');
   document.getElementById('aluno-screen').style.display = 'none';
@@ -351,13 +406,14 @@ function render(view) {
     `;
   } else if (view === 'alunos') {
     c.innerHTML = `
-      <button class="btn primary" onclick="openAlunoModal()">+ Cadastrar Novo Aluno</button>
+      <button class="btn" disabled title="A criação segura de contas será conectada na próxima etapa">Cadastro de alunos pelo Supabase (próxima etapa)</button>
       <p class="section-title">Gestão de Alunos</p>
+      <p style="font-size:12px;color:var(--text-dim);line-height:1.5">Esta lista ainda mostra registros locais antigos. Ela não é a lista oficial de contas do Supabase.</p>
       ${db.users.filter(x => x.role === 'Aluno').map(al => `
         <div class="row">
-          <div><b>${al.name}</b><br><span style="font-size:11px;color:var(--text-dim)">Usuário: <code>${al.user}</code> | Senha: <code>${al.pass}</code> | Curso: ${al.curso||'Geral'}</span></div>
+          <div><b>${al.name}</b><br><span style="font-size:11px;color:var(--text-dim)">Registro local legado | Curso: ${al.curso||'Geral'}</span></div>
           <div>
-            <button class="btn" onclick="copiarAcesso('${al.user}','${al.pass}')">Copiar Acesso</button>
+            <button class="btn" disabled title="Os acessos agora são gerenciados pelo Supabase">Acesso pelo Supabase</button>
             <button class="btn danger" onclick="excluirAluno(${al.id})">Excluir</button>
           </div>
         </div>
@@ -376,10 +432,9 @@ function render(view) {
     `;
   } else if (view === 'config') {
     c.innerHTML = `
-      <p class="section-title">Configurações Gerais e Credenciais do ADM</p>
+      <p class="section-title">Configurações Gerais</p>
       <div class="card" style="cursor:default;">
-        <div class="field"><label>Novo Usuário ADM</label><input id="cfg_admUser" value="${db.config.admUser}"></div>
-        <div class="field"><label>Nova Senha ADM</label><input id="cfg_admPass" value="${db.config.admPass}"></div>
+        <p style="font-size:12px;color:var(--text-dim);line-height:1.5">O acesso agora é gerenciado pelo Supabase Auth. Alterações de e-mail e senha devem ser feitas pelo fluxo seguro de conta.</p>
         <div class="field"><label>Número do WhatsApp (com DDI e DDD para suporte)</label><input id="cfg_zap" value="${db.config.whatsapp}" placeholder="Ex: 5511999999999"></div>
         <div class="field"><label>Link de Imagem Ilustrativa (Capa / Banner)</label><input id="cfg_img" value="${db.config.imagemIlustrativa || ''}" placeholder="https://..."></div>
         <div class="field"><label>Instituição</label><input id="cfg_inst" value="${db.config.instituicao}"></div>
@@ -696,8 +751,6 @@ function copiarAcesso(u, p) {
 
 function saveConfig() {
   const db = getDB();
-  db.config.admUser = document.getElementById('cfg_admUser').value.trim();
-  db.config.admPass = document.getElementById('cfg_admPass').value.trim();
   db.config.whatsapp = document.getElementById('cfg_zap').value.trim();
   db.config.imagemIlustrativa = document.getElementById('cfg_img').value.trim();
   db.config.instituicao = document.getElementById('cfg_inst').value.trim();
