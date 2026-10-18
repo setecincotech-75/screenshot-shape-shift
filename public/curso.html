@@ -331,6 +331,7 @@ function render(view) {
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
         <button class="btn primary" onclick="openModuloModal()">+ Novo Módulo</button>
         <button class="btn" onclick="openDriveImportModal()">↗ Vincular material do Google Drive</button>
+        <button class="btn" onclick="openContentImportModal()">＋ Importar conteúdo</button>
       </div>
       <p class="section-title">Módulos Editáveis do Curso</p>
       ${db.modulos.map(m => `
@@ -468,6 +469,106 @@ function openDriveImportModal() {
     <button class="btn primary" onclick="importDriveMaterial()">Vincular material ao módulo</button>
   `);
 }
+function openContentImportModal() {
+  const db = getDB();
+  if (!db.modulos.length) {
+    alert('Crie um módulo antes de importar conteúdo.');
+    return;
+  }
+  const options = db.modulos.map(m => `<option value="${m.id}">${String(m.titulo).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</option>`).join('');
+  openModal(`
+    <div class="modal-head"><h3>Importar conteúdo para uma aula</h3><button class="btn" onclick="closeModal()">✕</button></div>
+    <p style="font-size:12px;color:var(--text-dim);line-height:1.6;margin-top:0">Importe texto de um arquivo .TXT, .MD ou .CSV. Para Google Docs, cole o link e tente a importação automática; se o Google bloquear o acesso pelo navegador, baixe o documento como texto e envie o arquivo aqui.</p>
+    <div class="field"><label>MÓDULO DE DESTINO</label><select id="content_import_mod">${options}</select></div>
+    <div class="field"><label>TÍTULO DA AULA</label><input id="content_import_title" placeholder="Ex.: Introdução à Segurança"></div>
+    <div class="field"><label>LINK DE UM DOCUMENTO GOOGLE DOCS (OPCIONAL)</label><input id="content_import_docs" type="url" placeholder="https://docs.google.com/document/d/..."></div>
+    <button class="btn" style="width:100%;margin-bottom:12px" onclick="importGoogleDocText()">Tentar importar texto do Google Docs</button>
+    <div class="field"><label>OU SELECIONE UM ARQUIVO DE TEXTO</label><input id="content_import_file" type="file" accept=".txt,.md,.csv,text/plain,text/markdown,text/csv"></div>
+    <div id="content_import_status" role="status" style="font-size:12px;line-height:1.5;color:var(--text-dim);margin-bottom:12px">O conteúdo será transformado em texto de aula e salvo no módulo escolhido.</div>
+    <button class="btn primary" onclick="importLocalTextFile()">Importar arquivo e criar aula</button>
+  `);
+}
+function setContentImportStatus(message, success) {
+  const el = document.getElementById('content_import_status');
+  if (!el) return;
+  el.textContent = message;
+  el.style.color = success ? 'var(--green)' : 'var(--text-dim)';
+}
+function saveImportedLesson(title, content, moduleId, sourceLabel) {
+  const cleanTitle = (title || '').trim();
+  const cleanContent = (content || '').replace(/\r\n?/g, '\n').trim();
+  if (!cleanTitle) { setContentImportStatus('Informe o título da aula antes de importar.', false); return false; }
+  if (!cleanContent) { setContentImportStatus('O arquivo/documento não contém texto para importar.', false); return false; }
+  if (cleanContent.length > 150000) { setContentImportStatus('O texto excede 150 mil caracteres. Divida o material em partes menores.', false); return false; }
+  const db = getDB();
+  const mod = db.modulos.find(m => m.id === Number(moduleId));
+  if (!mod) { setContentImportStatus('Módulo não encontrado. Feche e tente novamente.', false); return false; }
+  mod.aulas.push({
+    id: Date.now(),
+    titulo: cleanTitle,
+    videoOriginal: '',
+    video: '',
+    drive: '',
+    pdf: '',
+    texto: cleanContent,
+    atividade: '',
+    importSource: sourceLabel || 'arquivo de texto'
+  });
+  try {
+    saveDB(db);
+  } catch (err) {
+    setContentImportStatus('Não foi possível salvar. O armazenamento do navegador pode estar cheio.', false);
+    return false;
+  }
+  closeModal();
+  render('modulos');
+  alert('Conteúdo importado e salvo como nova aula.');
+  return true;
+}
+async function importGoogleDocText() {
+  const url = document.getElementById('content_import_docs').value.trim();
+  const title = document.getElementById('content_import_title').value.trim();
+  const moduleId = document.getElementById('content_import_mod').value;
+  const match = url.match(/^https:\/\/docs\.google\.com\/document\/d\/([\w-]+)/i);
+  if (!match) {
+    setContentImportStatus('Cole um link HTTPS válido de um documento Google Docs.', false);
+    return;
+  }
+  if (!title) {
+    setContentImportStatus('Informe o título da aula antes de importar.', false);
+    return;
+  }
+  setContentImportStatus('Tentando obter o texto do Google Docs…', false);
+  try {
+    const exportUrl = `https://docs.google.com/document/d/${match[1]}/export?format=txt`;
+    const response = await fetch(exportUrl);
+    if (!response.ok) throw new Error('Acesso negado ou documento indisponível.');
+    const content = await response.text();
+    if (!content.trim()) throw new Error('O documento retornou vazio.');
+    saveImportedLesson(title, content, moduleId, 'Google Docs');
+  } catch (err) {
+    setContentImportStatus('O Google não permitiu a leitura automática neste navegador ou o documento não está público. Abra o Google Docs, escolha Arquivo → Fazer download → Texto simples (.txt) e selecione o arquivo no campo abaixo. Seu documento original não será alterado.', false);
+  }
+}
+function importLocalTextFile() {
+  const input = document.getElementById('content_import_file');
+  const file = input && input.files && input.files[0];
+  const title = document.getElementById('content_import_title').value.trim() || (file ? file.name.replace(/\.(txt|md|csv)$/i, '') : '');
+  const moduleId = document.getElementById('content_import_mod').value;
+  if (!file) {
+    setContentImportStatus('Selecione um arquivo .TXT, .MD ou .CSV.', false);
+    return;
+  }
+  if (file.size > 1024 * 1024) {
+    setContentImportStatus('O arquivo deve ter no máximo 1 MB. Divida materiais maiores em partes.', false);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => saveImportedLesson(title, String(reader.result || ''), moduleId, file.name);
+  reader.onerror = () => setContentImportStatus('Não foi possível ler o arquivo. Tente salvá-lo como UTF-8 e enviar novamente.', false);
+  reader.readAsText(file, 'UTF-8');
+}
+
 function previewDriveImport() {
   const hint = document.getElementById('drive_import_hint');
   const input = document.getElementById('drive_import_url');
