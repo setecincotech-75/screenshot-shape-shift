@@ -273,11 +273,6 @@ async function handleLogin(e) {
     return false;
   }
 
-  const u = uInput.value.trim();
-  const p = pInput.value.trim();
-  const db = getDB();
-
-  // Validação do ADM
   const u = uInput.value.trim().toLowerCase();
   const p = pInput.value;
   const submitButton = document.querySelector('#loginForm button[type="submit"]');
