@@ -230,12 +230,53 @@ if (!localStorage.getItem('curso_maquinas_db')) { saveDB(getDB()); }
 
 let currentUser = null;
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   limparCredenciaisLegadasLocais();
   atualizarInterfaceLogin();
-  getSupabaseClient().catch(error => {
-    console.error('Não foi possível inicializar o Supabase:', error);
-  });
+  try {
+    const client = await getSupabaseClient();
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw sessionError;
+    const session = sessionData.session;
+    if (!session?.user) return;
+
+    const [profileResult, roleResult] = await Promise.all([
+      client.from('profiles').select('full_name').eq('id', session.user.id).maybeSingle(),
+      client.from('user_roles').select('role').eq('user_id', session.user.id)
+    ]);
+    if (profileResult.error || roleResult.error) {
+      console.error('Não foi possível restaurar perfil/permissões:', profileResult.error || roleResult.error);
+      await client.auth.signOut();
+      return;
+    }
+
+    const roles = (roleResult.data || []).map(item => String(item.role || '').toLowerCase());
+    const isStaff = roles.some(role => ['admin', 'teacher', 'adm', 'professor'].includes(role));
+    const isStudent = roles.includes('student') || roles.includes('aluno');
+    if (!isStaff && !isStudent) {
+      await client.auth.signOut();
+      return;
+    }
+
+    currentUser = {
+      id: session.user.id,
+      user: session.user.email,
+      email: session.user.email,
+      role: isStaff ? 'ADM' : 'Aluno',
+      name: profileResult.data?.full_name || session.user.email
+    };
+    document.getElementById('login-screen').style.display = 'none';
+    if (currentUser.role === 'ADM') {
+      document.getElementById('app').classList.add('show');
+      render('dashboard');
+    } else {
+      document.getElementById('aluno-screen').style.display = 'flex';
+      document.getElementById('alunoNomeDisplay').textContent = currentUser.name;
+      renderAluno();
+    }
+  } catch (error) {
+    console.error('Não foi possível inicializar/restaurar a sessão Supabase:', error);
+  }
 });
 
 function limparCredenciaisLegadasLocais() {
