@@ -231,11 +231,34 @@ if (!localStorage.getItem('curso_maquinas_db')) { saveDB(getDB()); }
 let currentUser = null;
 
 window.addEventListener('DOMContentLoaded', () => {
+  limparCredenciaisLegadasLocais();
   atualizarInterfaceLogin();
   getSupabaseClient().catch(error => {
     console.error('Não foi possível inicializar o Supabase:', error);
   });
 });
+
+function limparCredenciaisLegadasLocais() {
+  try {
+    const raw = localStorage.getItem('curso_maquinas_db');
+    if (!raw) return;
+    const db = JSON.parse(raw);
+    let changed = false;
+    if (db.config) {
+      if ('admUser' in db.config) { delete db.config.admUser; changed = true; }
+      if ('admPass' in db.config) { delete db.config.admPass; changed = true; }
+    }
+    if (Array.isArray(db.users)) {
+      db.users = db.users.map(({ user, pass, ...safeUser }) => {
+        if (user !== undefined || pass !== undefined) changed = true;
+        return safeUser;
+      });
+    }
+    if (changed) localStorage.setItem('curso_maquinas_db', JSON.stringify(db));
+  } catch (error) {
+    console.error('Não foi possível limpar credenciais locais antigas:', error);
+  }
+}
 
 function atualizarInterfaceLogin() {
   const db = getDB();
@@ -709,28 +732,6 @@ function deleteAula(modId, aulaId) {
   render('modulos');
 }
 
-function openAlunoModal() {
-  openModal(`
-    <div class="modal-head"><h3>Cadastrar Aluno</h3><button class="btn" onclick="closeModal()">✕</button></div>
-    <div class="field"><label>Nome Completo</label><input id="al_nome"></div>
-    <div class="field"><label>Usuário</label><input id="al_user"></div>
-    <div class="field"><label>Senha</label><input id="al_pass" value="123456"></div>
-    <div class="field"><label>Curso</label><input id="al_curso"></div>
-    <button class="btn primary" onclick="salvarAluno()">Cadastrar</button>
-  `);
-}
-function salvarAluno() {
-  const name = document.getElementById('al_nome').value.trim();
-  const user = document.getElementById('al_user').value.trim();
-  const pass = document.getElementById('al_pass').value.trim();
-  const curso = document.getElementById('al_curso').value.trim();
-  if(!name || !user) return;
-  const db = getDB();
-  db.users.push({ id: Date.now(), user, pass, role: 'Aluno', name, curso });
-  saveDB(db);
-  closeModal();
-  render('alunos');
-}
 function excluirAluno(id) {
   if(!confirm('Deseja excluir este aluno?')) return;
   const db = getDB();
@@ -739,10 +740,6 @@ function excluirAluno(id) {
   render('alunos');
 }
 
-function copiarAcesso(u, p) {
-  navigator.clipboard.writeText(`Usuário: ${u}\nSenha: ${p}`);
-  alert('Acesso copiado!');
-}
 
 function saveConfig() {
   const db = getDB();
