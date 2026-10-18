@@ -147,6 +147,15 @@ as $$
                 and e.status = 'active'
                 and lp.lesson_id = previous_schedule.lesson_id
                 and lp.status = 'completed'
+                and (
+                  btrim(coalesce(previous_lesson.activity_prompt, '')) = ''
+                  or exists (
+                    select 1
+                    from public.activity_submissions submission
+                    where submission.enrollment_id = e.id
+                      and submission.lesson_id = previous_schedule.lesson_id
+                  )
+                )
             )
         )
     );
